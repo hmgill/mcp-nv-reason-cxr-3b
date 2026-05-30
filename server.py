@@ -77,6 +77,7 @@ def _preprocess_image(image_b64: str, image_id: str, max_side: int = 1280) -> st
     Ensures the Modal worker always receives a clean RGB PNG regardless
     of the input format (JPEG, PNG, DICOM-exported PNG, etc.).
     """
+    logger.info(f"[{image_id}] Received image_b64 length: {len(image_b64)}")
     try:
         raw = base64.b64decode(image_b64)
         img = Image.open(io.BytesIO(raw)).convert("RGB")
