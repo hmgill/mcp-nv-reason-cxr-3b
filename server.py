@@ -233,4 +233,4 @@ async def health() -> str:
 
 
 if __name__ == "__main__":
-    mcp.run(stateless_http=True, json_response=True)
+    mcp.run(stateless_http=True, json_response=True, max_request_body_size=64*1024*1024)
