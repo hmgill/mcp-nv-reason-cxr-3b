@@ -71,7 +71,7 @@ def _modal_dispatch(route: str, image_id: str, image_b64: str, prompt: str) -> d
 # Preprocessing — runs locally, no GPU needed
 # ---------------------------------------------------------------------------
 
-def _preprocess_image(image_b64: str, image_id: str) -> str:
+def _preprocess_image(image_b64: str, image_id: str, max_side: int = 1280) -> str:
     """
     Decode, validate, and re-encode the image as PNG.
     Ensures the Modal worker always receives a clean RGB PNG regardless
@@ -91,7 +91,13 @@ def _preprocess_image(image_b64: str, image_id: str) -> str:
             "Expected a chest X-ray of reasonable resolution."
         )
 
-    logger.info(f"[{image_id}] Image validated: {w}x{h} RGB")
+    # Resize so the longest edge <= max_side to avoid token budget overflow
+    if max(w, h) > max_side:
+        scale = max_side / max(w, h)
+        img = img.resize((int(w * scale), int(h * scale)), Image.LANCZOS)
+        logger.info(f"[{image_id}] Resized {w}x{h} -> {img.size[0]}x{img.size[1]}")
+    else:
+        logger.info(f"[{image_id}] Image validated: {w}x{h} RGB")
 
     buf = io.BytesIO()
     img.save(buf, format="PNG")
